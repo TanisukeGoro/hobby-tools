@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from 'react';
 import RecipeCalculator from './RecipeCalculator';
 
 export default function ClientRecipeCalculator() {

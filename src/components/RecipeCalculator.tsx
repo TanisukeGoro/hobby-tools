@@ -3,8 +3,43 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
+interface Ingredients {
+  かぼちゃ: number;
+  ミルク: number;
+  小麦粉: number;
+  卵: number;
+  とうもろこし: number;
+  水: number;
+  秘伝調味料: number;
+  バター: number;
+  ターキー: number;
+  サヤインゲン: number;
+  ジャガイモ: number;
+  クランベリー: number;
+}
+
+interface Recipe {
+  [key: string]: number;
+}
+
+interface Recipes {
+  [key: string]: Recipe;
+}
+
+interface RecipeData {
+  count: number;
+  limitingIngredient: string;
+  requiredForNext: Record<string, number>;
+}
+
+interface ResultType {
+  maxDishes: Record<string, RecipeData>;
+  ingredientUsage: Record<string, number>;
+  totalDishes: number;
+}
+
 const RecipeCalculator = () => {
-  const [ingredients, setIngredients] = useState({
+  const [ingredients, setIngredients] = useState<Ingredients>({
     'かぼちゃ': 0,
     'ミルク': 0,
     '小麦粉': 0,
@@ -19,7 +54,7 @@ const RecipeCalculator = () => {
     'クランベリー': 0
   });
 
-  const recipes = {
+  const recipes: Recipes = {
     'ローストターキー': { '秘伝調味料': 1, 'バター': 1, 'ターキー': 2 },
     'とうもろこしパン': { '小麦粉': 1, '卵': 1, 'とうもろこし': 2 },
     'カボチャパイ': { 'かぼちゃ': 2, 'ミルク': 1, '小麦粉': 1 },
@@ -28,20 +63,20 @@ const RecipeCalculator = () => {
     'クランベリージャム': { '水': 1, '秘伝調味料': 1, 'クランベリー': 2 }
   };
 
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ResultType | null>(null);
 
   const calculateOptimalRecipes = () => {
-    let maxDishes = {};
-    let remainingIngredients = { ...ingredients };
+    const maxDishes: Record<string, RecipeData> = {};
+    const remainingIngredients: Ingredients = { ...ingredients };
     
     // 各料理の最大生産可能数を計算
     for (const [recipe, requirements] of Object.entries(recipes)) {
       let maxPossible = Infinity;
       let limitingIngredient = '';
-      let requiredForNext = {};
+      const requiredForNext: Record<string, number> = {};
       
       for (const [ingredient, amount] of Object.entries(requirements)) {
-        const availableAmount = remainingIngredients[ingredient];
+        const availableAmount = remainingIngredients[ingredient as keyof Ingredients];
         const possibleDishes = Math.floor(availableAmount / amount);
         if (possibleDishes < maxPossible) {
           maxPossible = possibleDishes;
@@ -51,13 +86,13 @@ const RecipeCalculator = () => {
       
       // 使用する材料を差し引く
       for (const [ingredient, amount] of Object.entries(requirements)) {
-        remainingIngredients[ingredient] -= maxPossible * amount;
+        remainingIngredients[ingredient as keyof Ingredients] -= maxPossible * amount;
       }
       
       // 次の1品を作るために必要な追加材料を計算
       for (const [ing, amt] of Object.entries(requirements)) {
-        if (remainingIngredients[ing] < amt) {
-          requiredForNext[ing] = amt - remainingIngredients[ing];
+        if (remainingIngredients[ing as keyof Ingredients] < amt) {
+          requiredForNext[ing] = amt - remainingIngredients[ing as keyof Ingredients];
         }
       }
       
@@ -68,7 +103,7 @@ const RecipeCalculator = () => {
       };
     }
     
-    let ingredientUsage = {};
+    const ingredientUsage: Record<string, number> = {};
     for (const [recipe, data] of Object.entries(maxDishes)) {
       for (const [ingredient, amount] of Object.entries(recipes[recipe])) {
         if (!ingredientUsage[ingredient]) {
