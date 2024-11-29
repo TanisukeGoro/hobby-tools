@@ -120,7 +120,7 @@ const RecipeCalculator = () => {
     });
   };
 
-  const handleIngredientChange = (ingredient, value) => {
+  const handleIngredientChange = (ingredient: keyof Ingredients, value: string) => {
     setIngredients(prev => ({
       ...prev,
       [ingredient]: parseInt(value) || 0
